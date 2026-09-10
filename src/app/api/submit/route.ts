@@ -52,13 +52,22 @@ export async function POST(request: Request) {
     }
 
     // 3. Forward to Google Apps Script
-    const response = await fetch(scriptUrl, {
+    // We use manual redirect to bypass Node 18 `fetch failed` bugs on 302 POST redirects
+    let response = await fetch(scriptUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
+      redirect: 'manual'
     });
+
+    if (response.status === 302 || response.status === 303) {
+      const location = response.headers.get('location');
+      if (location) {
+        response = await fetch(location, { method: 'GET' });
+      }
+    }
 
     let result;
     try {

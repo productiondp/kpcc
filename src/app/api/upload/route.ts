@@ -20,8 +20,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Forward to Google Apps Script
-    const response = await fetch(scriptUrl, {
+    // Forward to Google Apps Script using manual redirect handling
+    // This is required to bypass Node 18's `fetch failed` bug on 302 POST redirects with large bodies
+    let response = await fetch(scriptUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +32,17 @@ export async function POST(request: Request) {
         fileName: data.fileName,
         fileData: data.base64Data
       }),
+      redirect: 'manual'
     });
+
+    // If Google Apps Script returns a 302 Found redirect to script.googleusercontent.com
+    // We manually follow it with a GET request to retrieve the JSON output
+    if (response.status === 302 || response.status === 303) {
+      const location = response.headers.get('location');
+      if (location) {
+        response = await fetch(location, { method: 'GET' });
+      }
+    }
 
     let result;
     try {
@@ -53,7 +64,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Upload error:", error.message || error);
     return NextResponse.json(
-      { success: false, error: "Failed to upload file. Please try again." },
+      { success: false, error: `Upload endpoint exception: ${error.message || 'Unknown error'}` },
       { status: 500 }
     );
   }

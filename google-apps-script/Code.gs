@@ -156,14 +156,16 @@ function doPost(e) {
     if (data.photoUrl) {
       photoUrl = data.photoUrl;
     } else if (data.photoData && folder) {
-      photoUrl = saveFileToDrive(data.photoData, `Photo_${data.fullName}_${new Date().getTime()}`, folder);
+      const res = saveFileToDrive(data.photoData, `Photo_${data.fullName}_${new Date().getTime()}`, folder);
+      photoUrl = res.url || '';
     }
     
     // Process ID Proof Upload
     if (data.idProofUrl) {
       idProofUrl = data.idProofUrl;
     } else if (data.idProofData && folder) {
-      idProofUrl = saveFileToDrive(data.idProofData, `IDProof_${data.fullName}_${new Date().getTime()}`, folder);
+      const res = saveFileToDrive(data.idProofData, `IDProof_${data.fullName}_${new Date().getTime()}`, folder);
+      idProofUrl = res.url || '';
     }
 
     // Append to sheet in the exact order mapped to the Next.js payload
@@ -322,18 +324,18 @@ function handleUploadFile(data) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 
-  const fileUrl = saveFileToDrive(data.fileData, data.fileName, folder);
+  const fileRes = saveFileToDrive(data.fileData, data.fileName, folder);
   
-  if (!fileUrl) {
+  if (!fileRes.url) {
     return ContentService.createTextOutput(JSON.stringify({
       status: 'error',
-      message: 'Failed to save file to Drive.'
+      message: 'Drive Upload Error: ' + (fileRes.error || 'Unknown failure')
     })).setMimeType(ContentService.MimeType.JSON);
   }
 
   return ContentService.createTextOutput(JSON.stringify({
     status: 'success',
-    url: fileUrl
+    url: fileRes.url
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -343,7 +345,7 @@ function handleUploadFile(data) {
 function saveFileToDrive(base64Data, filename, folder) {
   try {
     const typeMatch = base64Data.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
-    if (!typeMatch) return '';
+    if (!typeMatch) return { url: null, error: 'Invalid Base64 Data Format (missing data:mime/type)' };
     
     const mimeType = typeMatch[1];
     let extension = mimeType.split('/')[1];
@@ -354,10 +356,10 @@ function saveFileToDrive(base64Data, filename, folder) {
     const blob = Utilities.newBlob(Utilities.base64Decode(base64String), mimeType, `${filename}.${extension}`);
     
     const file = folder.createFile(blob);
-    return file.getUrl();
+    return { url: file.getUrl(), error: null };
   } catch (e) {
     console.log("File save error", e);
-    return '';
+    return { url: null, error: e.toString() };
   }
 }
 
