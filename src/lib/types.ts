@@ -51,6 +51,9 @@ export interface FormData {
   dateOfAdmission: string;
   verifiedBy: string;
   approvedBy: string;
+  
+  // Backend Generated
+  applicationNo?: string;
 }
 
 export const defaultFormData: FormData = {

@@ -1,8 +1,8 @@
 import React, { forwardRef, useId } from 'react';
 
 export const Label = ({ children, required, htmlFor, className = '' }: { children: React.ReactNode, required?: boolean, htmlFor?: string, className?: string }) => (
-  <label htmlFor={htmlFor} className={`block text-sm font-medium text-foreground mb-1 ${className}`}>
-    {children} {required && <span className="text-destructive">*</span>}
+  <label htmlFor={htmlFor} className={`block text-xs font-semibold text-foreground/80 uppercase tracking-wider mb-2 ${className}`}>
+    {children} {required && <span className="text-orange-500">*</span>}
   </label>
 );
 
@@ -16,8 +16,8 @@ export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTML
         <input
           id={inputId}
           ref={ref}
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors ${
-            error ? 'border-destructive ring-destructive/20' : 'border-border'
+          className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm hover:border-gray-300 ${
+            error ? 'border-destructive ring-destructive/20' : 'border-gray-200'
           } ${className}`}
           {...props}
         />
@@ -38,8 +38,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
         <textarea
           id={inputId}
           ref={ref}
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors min-h-[100px] ${
-            error ? 'border-destructive ring-destructive/20' : 'border-border'
+          className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm hover:border-gray-300 min-h-[120px] resize-y ${
+            error ? 'border-destructive ring-destructive/20' : 'border-gray-200'
           } ${className}`}
           {...props}
         />
@@ -60,9 +60,10 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
         <select
           id={inputId}
           ref={ref}
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors bg-white ${
-            error ? 'border-destructive ring-destructive/20' : 'border-border'
+          className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm hover:border-gray-300 appearance-none ${
+            error ? 'border-destructive ring-destructive/20' : 'border-gray-200'
           } ${className}`}
+          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236b7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
           {...props}
         >
           <option value="" disabled>Select an option</option>
@@ -82,9 +83,9 @@ export const RadioGroup = forwardRef<HTMLInputElement, { label?: string, name: s
     return (
       <div className="w-full">
         {label && <Label required={required}>{label}</Label>}
-        <div className="flex flex-wrap gap-4 mt-2">
+        <div className="flex flex-wrap gap-3 mt-2">
           {options.map((opt) => (
-            <label key={opt.value} className="flex items-center gap-2 cursor-pointer bg-secondary/50 px-4 py-2 rounded-md hover:bg-secondary transition-colors border border-transparent has-[:checked]:border-ring has-[:checked]:bg-orange-50">
+            <label key={opt.value} className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3 rounded-xl shadow-sm border hover:border-gray-300 transition-all has-[:checked]:border-primary has-[:checked]:bg-slate-50">
               <input
                 type="radio"
                 name={name}
@@ -92,9 +93,9 @@ export const RadioGroup = forwardRef<HTMLInputElement, { label?: string, name: s
                 checked={value === opt.value}
                 onChange={onChange}
                 ref={ref}
-                className="w-4 h-4 text-ring focus:ring-ring"
+                className="w-4 h-4 text-primary focus:ring-primary border-gray-300"
               />
-              <span className="text-sm font-medium">{opt.label}</span>
+              <span className="text-sm font-medium text-foreground">{opt.label}</span>
             </label>
           ))}
         </div>
@@ -120,27 +121,44 @@ export const FileUpload = ({ label, required, accept, onChange, error, preview }
   return (
     <div className="w-full">
       <Label required={required}>{label}</Label>
-      <div className={`mt-1 border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary/50 transition-colors ${error ? 'border-destructive' : 'border-border'}`}>
+      <div className={`relative mt-2 border bg-white rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 shadow-sm hover:border-gray-300 transition-all ${error ? 'border-destructive' : 'border-gray-200'}`}>
+        
         {preview ? (
-          <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-md border">
+          <div className="shrink-0 relative w-16 h-16 overflow-hidden rounded-lg border bg-gray-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Preview" className="object-cover w-full h-full" />
           </div>
         ) : (
-          <div className="w-12 h-12 bg-secondary rounded-full flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          <div className="shrink-0 w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
           </div>
         )}
-        <p className="text-sm font-medium">Click to upload or drag and drop</p>
-        <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or PDF (max. 5MB)</p>
+        
+        <div className="flex-1 text-center sm:text-left">
+          <p className="text-sm font-semibold text-foreground">
+            {preview ? 'File selected' : 'Upload file'}
+          </p>
+          <p className="text-xs text-foreground/60 mt-0.5">
+            {accept?.includes('pdf') ? 'JPG, PNG, or PDF' : 'JPG or PNG'} (max. 4MB)
+          </p>
+        </div>
+        
+        <div className="shrink-0">
+          <span className="text-xs font-semibold px-4 py-2 bg-slate-100 text-slate-700 rounded-lg group-hover:bg-slate-200 transition-colors pointer-events-none">
+            {preview ? 'Replace' : 'Browse'}
+          </span>
+        </div>
+
         <input type="file" className="hidden" accept={accept} onChange={handleFileChange} />
+        
+        {/* The critical bug fix: the parent is now relative, so this button only covers this component */}
         <button type="button" onClick={(e) => {
           const parent = e.currentTarget.parentElement;
           if (parent) {
              const input = parent.querySelector('input');
              if (input) input.click();
           }
-        }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" aria-label="Upload file" />
       </div>
       {error && <p className="text-destructive text-xs mt-1">{error}</p>}
     </div>

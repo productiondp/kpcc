@@ -10,13 +10,27 @@ export default function Step1Personal() {
   const idProofData = watch('idProofData');
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6 pb-2 border-b">
-        <h2 className="text-2xl font-semibold text-primary">Personal Information</h2>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-primary mb-2">Personal Information</h2>
         <p className="text-sm text-foreground/60">Please provide your personal details as per official records.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Photo Upload at the top */}
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+        <div className="flex-grow">
+          <h3 className="text-lg font-bold text-primary mb-1">Passport Size Photo</h3>
+          <p className="text-sm text-foreground/60 mb-4">Affix Passport Size Photo Here. This will be printed on your official membership card.</p>
+          <FileUpload 
+            label="Upload Photo" 
+            accept="image/*"
+            preview={photoData}
+            onChange={(base64) => setValue('photoData', base64)}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <Input 
           label="01. Full Name (in block letters)" 
           placeholder="Enter full name" 
@@ -114,12 +128,12 @@ export default function Step1Personal() {
         />
       </div>
 
-      <div className="mt-8 pt-6 border-t">
-        <h3 className="text-lg font-medium text-primary mb-4">08. Identity & Photo</h3>
+      <div className="mt-8 pt-8 border-t border-gray-200">
+        <h3 className="text-xl font-bold text-primary mb-6">08. Identity Proof</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <Select 
-              label="08. ID Proof Type" 
+              label="ID Proof Type" 
               options={[
                 { label: 'Aadhaar', value: 'Aadhaar' },
                 { label: 'Voter ID', value: 'Voter ID' },
@@ -133,21 +147,14 @@ export default function Step1Personal() {
               placeholder="Enter ID number"
               {...register('idProofNo')}
             />
-            
+          </div>
+
+          <div>
             <FileUpload 
               label="(attach copy)" 
               accept="image/*,.pdf"
               preview={idProofData && idProofData.startsWith('data:image') ? idProofData : undefined}
               onChange={(base64) => setValue('idProofData', base64)}
-            />
-          </div>
-
-          <div>
-            <FileUpload 
-              label="Affix Passport Size Photo Here" 
-              accept="image/*"
-              preview={photoData}
-              onChange={(base64) => setValue('photoData', base64)}
             />
           </div>
         </div>
