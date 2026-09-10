@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { Input, RadioGroup, Textarea } from '../ui/FormControls';
+import { Input, RadioGroup, Textarea, SelectWithCustom } from '../ui/FormControls';
 import { FormData } from '@/lib/types';
 
 export default function Step2Professional() {
@@ -43,17 +43,15 @@ export default function Step2Professional() {
             name="sector"
             control={control}
             render={({ field }) => (
-              <RadioGroup
+              <SelectWithCustom
                 label="12. Sector / Industry"
-                name="sector"
                 options={[
                   { label: 'Manufacturing', value: 'Manufacturing' },
                   { label: 'Service', value: 'Service' },
                   { label: 'Trading', value: 'Trading' },
-                  { label: 'Agriculture', value: 'Agriculture' },
-                  { label: 'Other', value: 'Other' }
+                  { label: 'Agriculture', value: 'Agriculture' }
                 ]}
-                value={field.value}
+                value={field.value || ''}
                 onChange={field.onChange}
               />
             )}
@@ -109,18 +107,27 @@ export default function Step2Professional() {
           <Controller
             name="gstType"
             control={control}
-            render={({ field }) => (
-              <RadioGroup
-                label="17. Type of GST Registration"
-                name="gstType"
-                options={[
-                  { label: 'Regular', value: 'Regular' },
-                  { label: 'Composition Scheme', value: 'Composition Scheme' }
-                ]}
-                value={field.value}
-                onChange={field.onChange}
-              />
-            )}
+            render={({ field }) => {
+              // Read the current status directly to dynamically disable this field
+              const { getValues } = useFormContext<FormData>();
+              const status = getValues('gstStatus');
+              const disabled = status === 'Not Registered';
+              
+              return (
+                <div className={disabled ? 'opacity-50 pointer-events-none' : ''}>
+                  <RadioGroup
+                    label="17. Type of GST Registration"
+                    name="gstType"
+                    options={[
+                      { label: 'Regular', value: 'Regular' },
+                      { label: 'Composition Scheme', value: 'Composition Scheme' }
+                    ]}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </div>
+              );
+            }}
           />
         </div>
       </div>

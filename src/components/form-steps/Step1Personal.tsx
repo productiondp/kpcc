@@ -2,12 +2,57 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input, Select, FileUpload } from '../ui/FormControls';
 import { FormData } from '@/lib/types';
+import { useState, useEffect } from 'react';
+
+const KERALA_DISTRICTS = [
+  { label: 'Thiruvananthapuram', value: 'Thiruvananthapuram' },
+  { label: 'Kollam', value: 'Kollam' },
+  { label: 'Pathanamthitta', value: 'Pathanamthitta' },
+  { label: 'Alappuzha', value: 'Alappuzha' },
+  { label: 'Kottayam', value: 'Kottayam' },
+  { label: 'Idukki', value: 'Idukki' },
+  { label: 'Ernakulam', value: 'Ernakulam' },
+  { label: 'Thrissur', value: 'Thrissur' },
+  { label: 'Palakkad', value: 'Palakkad' },
+  { label: 'Malappuram', value: 'Malappuram' },
+  { label: 'Kozhikode', value: 'Kozhikode' },
+  { label: 'Wayanad', value: 'Wayanad' },
+  { label: 'Kannur', value: 'Kannur' },
+  { label: 'Kasaragod', value: 'Kasaragod' }
+];
 
 export default function Step1Personal() {
   const { register, setValue, watch, formState: { errors } } = useFormContext<FormData>();
 
   const photoData = watch('photoData');
   const idProofData = watch('idProofData');
+  const currentDistrictCombined = watch('district') || '';
+
+  const [selectedDist, setSelectedDist] = useState('');
+  const [selectedConst, setSelectedConst] = useState('');
+
+  // Initialize from combined value if present (e.g. going back to step 1)
+  useEffect(() => {
+    if (currentDistrictCombined && !selectedDist && !selectedConst) {
+      if (currentDistrictCombined.includes(' - ')) {
+        const parts = currentDistrictCombined.split(' - ');
+        setSelectedDist(parts[0]);
+        setSelectedConst(parts[1]);
+      } else {
+        setSelectedConst(currentDistrictCombined);
+      }
+    }
+  }, [currentDistrictCombined, selectedDist, selectedConst]);
+
+  // Update form value when either changes
+  useEffect(() => {
+    if (selectedDist || selectedConst) {
+      const combined = [selectedDist, selectedConst].filter(Boolean).join(' - ');
+      setValue('district', combined, { shouldValidate: true });
+    } else {
+      setValue('district', '');
+    }
+  }, [selectedDist, selectedConst, setValue]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -54,13 +99,9 @@ export default function Step1Personal() {
             type="number"
             {...register('age')}
           />
-          <Select 
+          <Input 
             label="Gender" 
-            options={[
-              { label: 'Male', value: 'Male' },
-              { label: 'Female', value: 'Female' },
-              { label: 'Other', value: 'Other' }
-            ]}
+            placeholder="e.g. Male/Female"
             {...register('gender')}
           />
         </div>
@@ -79,11 +120,26 @@ export default function Step1Personal() {
           />
         </div>
 
-        <Input 
-          label="05. District / Assembly Constituency" 
-          placeholder="Enter district or constituency"
-          {...register('district')}
-        />
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="md:col-span-2">
+            <h4 className="text-sm font-semibold text-primary mb-1">05. District / Assembly Constituency</h4>
+            <p className="text-xs text-foreground/60 mb-2">Select your district and enter your constituency.</p>
+          </div>
+          
+          <Select 
+            label="District" 
+            options={KERALA_DISTRICTS}
+            value={selectedDist}
+            onChange={(e) => setSelectedDist(e.target.value)}
+          />
+          
+          <Input 
+            label="Assembly Constituency" 
+            placeholder="e.g. Nemom"
+            value={selectedConst}
+            onChange={(e) => setSelectedConst(e.target.value)}
+          />
+        </div>
 
         <Input 
           label="Pin Code" 

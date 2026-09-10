@@ -1,4 +1,4 @@
-import React, { forwardRef, useId } from 'react';
+import React, { forwardRef, useId, useState } from 'react';
 
 export const Label = ({ children, required, htmlFor, className = '' }: { children: React.ReactNode, required?: boolean, htmlFor?: string, className?: string }) => (
   <label htmlFor={htmlFor} className={`block text-xs font-semibold text-foreground/80 uppercase tracking-wider mb-2 ${className}`}>
@@ -164,3 +164,72 @@ export const FileUpload = ({ label, required, accept, onChange, error, preview }
     </div>
   );
 };
+
+export const SelectWithCustom = ({ label, options, required, value, onChange, placeholder = "Select an option", error }: { label: string, options: {label: string, value: string}[], required?: boolean, value: string, onChange: (val: string) => void, placeholder?: string, error?: string }) => {
+  const generatedId = useId();
+  
+  // Determine if the current value is one of the predefined options, or if it's a custom value
+  const isPredefined = options.some(opt => opt.value === value) || value === '';
+  const [isCustomMode, setIsCustomMode] = useState(!isPredefined && value !== '');
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === 'OTHER_CUSTOM') {
+      setIsCustomMode(true);
+      onChange(''); // clear value when switching to custom
+    } else {
+      setIsCustomMode(false);
+      onChange(val);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      {label && <Label htmlFor={generatedId} required={required}>{label}</Label>}
+      
+      {!isCustomMode ? (
+        <select
+          id={generatedId}
+          value={value}
+          onChange={handleSelectChange}
+          className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm hover:border-gray-300 appearance-none ${
+            error ? 'border-destructive ring-destructive/20' : 'border-gray-200'
+          }`}
+          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236b7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em' }}
+        >
+          <option value="" disabled>{placeholder}</option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+          {/* Always add "Other" option if we support custom input */}
+          <option value="OTHER_CUSTOM">Other (Please specify)</option>
+        </select>
+      ) : (
+        <div className="relative animate-in fade-in zoom-in-95 duration-200">
+          <input
+            id={generatedId}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Please specify..."
+            autoFocus
+            className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm hover:border-gray-300 pr-12 ${
+              error ? 'border-destructive ring-destructive/20' : 'border-gray-200'
+            }`}
+          />
+          <button 
+            type="button"
+            onClick={() => { setIsCustomMode(false); onChange(''); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+            title="Back to options"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+      
+      {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+    </div>
+  );
+};
+
