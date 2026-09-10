@@ -1,25 +1,10 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Input, Select, FileUpload } from '../ui/FormControls';
+import { Input, Select, FileUpload, SelectWithCustom } from '../ui/FormControls';
 import { FormData } from '@/lib/types';
 import { useState, useEffect } from 'react';
 
-const KERALA_DISTRICTS = [
-  { label: 'Thiruvananthapuram', value: 'Thiruvananthapuram' },
-  { label: 'Kollam', value: 'Kollam' },
-  { label: 'Pathanamthitta', value: 'Pathanamthitta' },
-  { label: 'Alappuzha', value: 'Alappuzha' },
-  { label: 'Kottayam', value: 'Kottayam' },
-  { label: 'Idukki', value: 'Idukki' },
-  { label: 'Ernakulam', value: 'Ernakulam' },
-  { label: 'Thrissur', value: 'Thrissur' },
-  { label: 'Palakkad', value: 'Palakkad' },
-  { label: 'Malappuram', value: 'Malappuram' },
-  { label: 'Kozhikode', value: 'Kozhikode' },
-  { label: 'Wayanad', value: 'Wayanad' },
-  { label: 'Kannur', value: 'Kannur' },
-  { label: 'Kasaragod', value: 'Kasaragod' }
-];
+import { KERALA_DISTRICTS, KERALA_CONSTITUENCIES } from '@/lib/kerala-data';
 
 export default function Step1Personal() {
   const { register, setValue, watch, formState: { errors } } = useFormContext<FormData>();
@@ -99,10 +84,17 @@ export default function Step1Personal() {
             type="number"
             {...register('age')}
           />
-          <Input 
+          <SelectWithCustom 
             label="Gender" 
-            placeholder="e.g. Male/Female"
-            {...register('gender')}
+            options={[
+              { label: 'Male', value: 'Male' },
+              { label: 'Female', value: 'Female' },
+              { label: 'Other', value: 'Other' }
+            ]}
+            value={watch('gender') || ''}
+            onChange={(val) => setValue('gender', val)}
+            placeholder="Select gender"
+            error={errors.gender?.message}
           />
         </div>
 
@@ -130,14 +122,18 @@ export default function Step1Personal() {
             label="District" 
             options={KERALA_DISTRICTS}
             value={selectedDist}
-            onChange={(e) => setSelectedDist(e.target.value)}
+            onChange={(e) => {
+              setSelectedDist(e.target.value);
+              setSelectedConst(''); // reset constituency when district changes
+            }}
           />
           
-          <Input 
+          <SelectWithCustom 
             label="Assembly Constituency" 
-            placeholder="e.g. Nemom"
+            options={(selectedDist && KERALA_CONSTITUENCIES[selectedDist] ? KERALA_CONSTITUENCIES[selectedDist].map(c => ({ label: c, value: c })) : [])}
             value={selectedConst}
-            onChange={(e) => setSelectedConst(e.target.value)}
+            onChange={(val) => setSelectedConst(val)}
+            placeholder={selectedDist ? "Select constituency" : "Select district first"}
           />
         </div>
 

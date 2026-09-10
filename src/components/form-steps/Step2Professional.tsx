@@ -15,19 +15,59 @@ export default function Step2Professional() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
-          <Input 
-            label="09. Educational Qualification" 
-            placeholder="e.g. B.Tech, MBA, B.Com"
-            required
-            {...register('education', { required: 'Education is required' })}
-            error={errors.education?.message}
+          <Controller
+            name="education"
+            control={control}
+            rules={{ required: 'Education is required' }}
+            render={({ field }) => (
+              <SelectWithCustom 
+                label="09. Educational Qualification" 
+                placeholder="Select qualification"
+                options={[
+                  { label: 'SSLC', value: 'SSLC' },
+                  { label: 'Plus Two / Higher Secondary', value: 'Plus Two / Higher Secondary' },
+                  { label: 'ITI', value: 'ITI' },
+                  { label: 'Diploma', value: 'Diploma' },
+                  { label: 'Undergraduate / Degree', value: 'Undergraduate / Degree' },
+                  { label: 'Postgraduate', value: 'Postgraduate' },
+                  { label: 'M.Phil', value: 'M.Phil' },
+                  { label: 'Ph.D.', value: 'Ph.D.' },
+                  { label: 'Professional Qualification', value: 'Professional Qualification' }
+                ]}
+                required
+                value={field.value || ''}
+                onChange={field.onChange}
+                error={errors.education?.message}
+              />
+            )}
           />
         </div>
 
-        <Input 
-          label="10. Designation (if applicable)" 
-          placeholder="e.g. Managing Director, Partner, Proprietor"
-          {...register('designation')}
+        <Controller
+          name="designation"
+          control={control}
+          render={({ field }) => (
+            <SelectWithCustom 
+              label="10. Designation (if applicable)" 
+              placeholder="Select designation"
+              options={[
+                { label: 'Proprietor', value: 'Proprietor' },
+                { label: 'Partner', value: 'Partner' },
+                { label: 'Director', value: 'Director' },
+                { label: 'Managing Director', value: 'Managing Director' },
+                { label: 'CEO', value: 'CEO' },
+                { label: 'Chairman', value: 'Chairman' },
+                { label: 'Managing Partner', value: 'Managing Partner' },
+                { label: 'General Manager', value: 'General Manager' },
+                { label: 'Manager', value: 'Manager' },
+                { label: 'Consultant', value: 'Consultant' },
+                { label: 'Professional', value: 'Professional' },
+                { label: 'Employee', value: 'Employee' }
+              ]}
+              value={field.value || ''}
+              onChange={field.onChange}
+            />
+          )}
         />
 
         <Input 

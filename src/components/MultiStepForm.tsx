@@ -194,7 +194,7 @@ export default function MultiStepForm() {
           </div>
 
           {/* Hidden PDF Content */}
-          <div className="hidden">
+          <div className="absolute top-0 left-[-9999px]">
             <div id="pdf-content">
               <ApplicationPDF data={getValues()} applicationNo={applicationNo} />
             </div>
