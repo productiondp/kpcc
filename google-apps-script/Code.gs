@@ -102,6 +102,11 @@ function doPost(e) {
       return handleUpdateOfficeUse(data);
     }
     
+    // Admin Action: Approve Application
+    if (data.action === 'approveApplication') {
+      return handleApproveApplication(data);
+    }
+    
     // File Upload Action (Split Upload Architecture)
     if (data.action === 'uploadFile') {
       return handleUploadFile(data);
@@ -124,7 +129,8 @@ function doPost(e) {
         "18. Are you a member of INC?", "19. Past / Present roles...", "20. Membership in Trade...", 
         "21. Social / Voluntary Org...", "22. Membership Fee Amount", "23. Mode of Payment", 
         "24. Date of Payment", "Payment Transaction Ref...", "Declaration Date", "Declaration Place", 
-        "Signature of Applicant", "Membership ID No", "Date of Admission", "Verified By", "Approved By"
+        "Signature of Applicant", "Membership ID No", "Date of Admission", "Verified By", "Approved By",
+        "Application Status", "Approval Timestamp", "Certificate URL", "Certificate Token", "Certificate Email Sent", "WhatsApp Status"
       ];
       sheet.appendRow(headers);
       sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
@@ -213,6 +219,12 @@ function doPost(e) {
       data.dateOfAdmission || '', 
       data.verifiedBy || '', 
       data.approvedBy || '', 
+      'Submitted', // Application Status
+      '', // Approval Timestamp
+      '', // Certificate URL
+      '', // Certificate Token
+      '', // Certificate Email Sent
+      'Not Configured', // WhatsApp Status
     ];
 
     sheet.appendRow(rowData);
@@ -296,6 +308,84 @@ function handleUpdateOfficeUse(data) {
   return ContentService.createTextOutput(JSON.stringify({
     status: 'success',
     message: 'Office Use updated successfully.'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleApproveApplication(data) {
+  if (!data.applicationNo) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Application Number is required for approval.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Database not initialized.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0];
+  
+  // Find column indices
+  const appNoIdx = headers.indexOf("Application Form No.");
+  const statusIdx = headers.indexOf("Application Status");
+  const apprTimeIdx = headers.indexOf("Approval Timestamp");
+  const certUrlIdx = headers.indexOf("Certificate URL");
+  const certTokenIdx = headers.indexOf("Certificate Token");
+  const certEmailIdx = headers.indexOf("Certificate Email Sent");
+  
+  if (appNoIdx === -1 || statusIdx === -1) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Schema error: Could not find required columns. Please resave an application to initialize schema.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Find target row
+  let targetRowIdx = -1;
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][appNoIdx] === data.applicationNo) {
+      targetRowIdx = i;
+      break;
+    }
+  }
+  
+  if (targetRowIdx === -1) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Application not found.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const rowNum = targetRowIdx + 1;
+  const currentStatus = sheet.getRange(rowNum, statusIdx + 1).getValue();
+
+  if (currentStatus === 'Approved') {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Application is already approved.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  const token = data.certificateToken || Utilities.getUuid();
+  const timestamp = new Date().toISOString();
+
+  sheet.getRange(rowNum, statusIdx + 1).setValue('Approved');
+  if (apprTimeIdx !== -1) sheet.getRange(rowNum, apprTimeIdx + 1).setValue(timestamp);
+  if (certUrlIdx !== -1 && data.certificateUrl) sheet.getRange(rowNum, certUrlIdx + 1).setValue(data.certificateUrl);
+  if (certTokenIdx !== -1) sheet.getRange(rowNum, certTokenIdx + 1).setValue(token);
+  if (certEmailIdx !== -1 && data.emailSent) sheet.getRange(rowNum, certEmailIdx + 1).setValue('Yes');
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    token: token,
+    message: 'Application approved successfully.'
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
