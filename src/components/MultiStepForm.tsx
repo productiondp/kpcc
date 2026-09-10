@@ -75,10 +75,56 @@ export default function MultiStepForm() {
     setIsSubmitting(true);
     setSubmitError('');
     try {
+      let photoUrl = '';
+      let idProofUrl = '';
+
+      // Upload Photo
+      if (data.photoData) {
+        const photoRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: `Photo_${data.fullName}_${new Date().getTime()}`,
+            base64Data: data.photoData
+          })
+        });
+        const photoResult = await photoRes.json();
+        if (!photoRes.ok || !photoResult.success) {
+          throw new Error(`Photo upload failed: ${photoResult.error || 'Unknown error'}`);
+        }
+        photoUrl = photoResult.url;
+      }
+
+      // Upload ID Proof
+      if (data.idProofData) {
+        const idProofRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: `IDProof_${data.fullName}_${new Date().getTime()}`,
+            base64Data: data.idProofData
+          })
+        });
+        const idProofResult = await idProofRes.json();
+        if (!idProofRes.ok || !idProofResult.success) {
+          throw new Error(`ID Proof upload failed: ${idProofResult.error || 'Unknown error'}`);
+        }
+        idProofUrl = idProofResult.url;
+      }
+
+      // Prepare final payload without massive base64 strings
+      const finalData = {
+        ...data,
+        photoData: '', // Strip base64
+        idProofData: '', // Strip base64
+        photoUrl, // Send URL instead
+        idProofUrl // Send URL instead
+      };
+
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(finalData)
       });
       
       const result = await response.json();
@@ -89,9 +135,9 @@ export default function MultiStepForm() {
       } else {
         setSubmitError(result.error || 'Failed to submit application. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setSubmitError('An unexpected error occurred. Please try again.');
+      setSubmitError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

@@ -102,6 +102,11 @@ function doPost(e) {
       return handleUpdateOfficeUse(data);
     }
     
+    // File Upload Action (Split Upload Architecture)
+    if (data.action === 'uploadFile') {
+      return handleUploadFile(data);
+    }
+    
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     let sheet = ss.getSheetByName(SHEET_NAME);
     
@@ -147,13 +152,17 @@ function doPost(e) {
       console.log("Folder configuration error", err);
     }
 
-    // Process Photo Upload
-    if (data.photoData && folder) {
+    // Process Photo Upload (Support both new URL-based and old Base64-based payload)
+    if (data.photoUrl) {
+      photoUrl = data.photoUrl;
+    } else if (data.photoData && folder) {
       photoUrl = saveFileToDrive(data.photoData, `Photo_${data.fullName}_${new Date().getTime()}`, folder);
     }
     
     // Process ID Proof Upload
-    if (data.idProofData && folder) {
+    if (data.idProofUrl) {
+      idProofUrl = data.idProofUrl;
+    } else if (data.idProofData && folder) {
       idProofUrl = saveFileToDrive(data.idProofData, `IDProof_${data.fullName}_${new Date().getTime()}`, folder);
     }
 
@@ -285,6 +294,46 @@ function handleUpdateOfficeUse(data) {
   return ContentService.createTextOutput(JSON.stringify({
     status: 'success',
     message: 'Office Use updated successfully.'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleUploadFile(data) {
+  if (!data.fileData || !data.fileName) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Missing file data or filename.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  let folder;
+  try {
+    if (UPLOAD_FOLDER_ID && UPLOAD_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE') {
+      folder = DriveApp.getFolderById(UPLOAD_FOLDER_ID);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Google Drive folder ID is not configured on the backend.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Folder access error: ' + err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const fileUrl = saveFileToDrive(data.fileData, data.fileName, folder);
+  
+  if (!fileUrl) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Failed to save file to Drive.'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    url: fileUrl
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
