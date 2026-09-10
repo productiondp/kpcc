@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getGoogleScriptUrl } from '@/lib/getGoogleScriptUrl';
 
 // Vercel Serverless Functions have a 4.5MB body limit. 
 // We should enforce a safe margin.
@@ -34,22 +35,27 @@ export async function POST(request: Request) {
     }
 
     // 2. Configuration Check
-    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
     const isMockEnabled = process.env.MOCK_SUBMISSION === 'true';
     
-    if (!scriptUrl) {
+    // Prepare Google Apps Script URL
+    let scriptUrl: string;
+    try {
+      scriptUrl = getGoogleScriptUrl();
+    } catch (e: any) {
       if (isMockEnabled) {
         console.warn("GOOGLE_SCRIPT_URL is not set. MOCK_SUBMISSION is true. Simulating success.");
         await new Promise(resolve => setTimeout(resolve, 1500)); 
         return NextResponse.json({ success: true, message: "Simulated success (Mock Mode)" });
-      } else {
-        console.error("CRITICAL: GOOGLE_SCRIPT_URL is not configured.");
-        return NextResponse.json(
-          { success: false, error: "Server Configuration Error: Database endpoint is not configured." },
-          { status: 500 }
-        );
       }
+      console.error(e.message);
+      return NextResponse.json(
+        { success: false, error: "Server Configuration Error: Database endpoint is not correctly configured." },
+        { status: 500 }
+      );
     }
+    
+    // Server-side diagnostic log (never logs full URL)
+    console.log(`[Submit] Sending request to Apps Script backend: ${new URL(scriptUrl).origin}${new URL(scriptUrl).pathname.substring(0, 15)}...`);
 
     // 3. Forward to Google Apps Script
     // We use manual redirect to bypass Node 18 `fetch failed` bugs on 302 POST redirects

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getGoogleScriptUrl } from '@/lib/getGoogleScriptUrl';
 
 export async function POST(request: Request) {
   try {
@@ -12,13 +13,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
-    if (!scriptUrl) {
+    let scriptUrl: string;
+    try {
+      scriptUrl = getGoogleScriptUrl();
+    } catch (e: any) {
+      console.error(e.message);
       return NextResponse.json(
-        { success: false, error: "Server Configuration Error: Database endpoint is not configured." },
+        { success: false, error: "Server Configuration Error: Database endpoint is not correctly configured." },
         { status: 500 }
       );
     }
+    
+    // Server-side diagnostic log (never logs full URL)
+    console.log(`[Upload] Sending request to Apps Script backend: ${new URL(scriptUrl).origin}${new URL(scriptUrl).pathname.substring(0, 15)}...`);
 
     // Forward to Google Apps Script using manual redirect handling
     // This is required to bypass Node 18's `fetch failed` bug on 302 POST redirects with large bodies
