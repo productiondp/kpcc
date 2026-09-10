@@ -10,7 +10,6 @@ import Step2Professional from './form-steps/Step2Professional';
 import Step3Involvement from './form-steps/Step3Involvement';
 import Step4Payment from './form-steps/Step4Payment';
 import Step5Declaration from './form-steps/Step5Declaration';
-import Step6OfficeUse from './form-steps/Step6OfficeUse';
 import ReviewStep from './form-steps/ReviewStep';
 import ApplicationPDF from './ApplicationPDF';
 
@@ -20,7 +19,6 @@ const steps = [
   { id: 'involvement', title: 'Organizational / Political Involvement' },
   { id: 'payment', title: 'Membership Fee Details' },
   { id: 'declaration', title: 'Declaration' },
-  { id: 'office', title: 'For Office Use Only' },
   { id: 'review', title: 'Review Application' }
 ];
 
@@ -239,8 +237,7 @@ export default function MultiStepForm() {
                     {currentStep === 2 && <Step3Involvement />}
                     {currentStep === 3 && <Step4Payment />}
                     {currentStep === 4 && <Step5Declaration />}
-                    {currentStep === 5 && <Step6OfficeUse />}
-                    {currentStep === 6 && <ReviewStep />}
+                    {currentStep === 5 && <ReviewStep />}
                   </motion.div>
                 </AnimatePresence>
               </div>

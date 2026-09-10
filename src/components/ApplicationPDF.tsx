@@ -4,9 +4,10 @@ import { FormData } from '@/lib/types';
 interface ApplicationPDFProps {
   data: FormData;
   applicationNo: string;
+  isAdmin?: boolean;
 }
 
-export default function ApplicationPDF({ data, applicationNo }: ApplicationPDFProps) {
+export default function ApplicationPDF({ data, applicationNo, isAdmin = false }: ApplicationPDFProps) {
   const Field = ({ label, value }: { label: string, value: string | undefined }) => (
     <div className="mb-2">
       <span className="font-bold text-xs uppercase text-gray-700 mr-2">{label}:</span>
@@ -127,32 +128,34 @@ export default function ApplicationPDF({ data, applicationNo }: ApplicationPDFPr
             <Field label="Place" value={data.declarationPlace} />
           </div>
           <div className="text-center w-48">
-            <div className="border-b border-gray-400 h-8 mb-2 font-script text-xl">{data.signatureName}</div>
+            <div className="border-b border-gray-400 h-8 mb-2 font-script text-xl flex items-end justify-center">{data.signatureName}</div>
             <span className="text-[10px] font-bold uppercase">Signature of Applicant</span>
           </div>
         </div>
       </div>
 
       {/* OFFICE USE */}
-      <div className="border-2 border-gray-800 p-4 relative pt-6">
-        <div className="absolute -top-3 left-4 bg-white px-2 font-bold text-xs">FOR OFFICE USE ONLY</div>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col gap-4">
-            <Field label="Membership ID No." value={data.membershipIdNo} />
-            <Field label="Date of Admission" value={data.dateOfAdmission} />
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="mb-2">
-              <span className="font-bold text-xs uppercase text-gray-700 block mb-6">Verified By (Name & Sign):</span>
-              <div className="border-b border-gray-400 w-full"></div>
+      {isAdmin && (
+        <div className="border-2 border-gray-800 p-4 relative pt-6">
+          <div className="absolute -top-3 left-4 bg-white px-2 font-bold text-xs">FOR OFFICE USE ONLY</div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex flex-col gap-4">
+              <Field label="Membership ID No." value={data.membershipIdNo} />
+              <Field label="Date of Admission" value={data.dateOfAdmission} />
             </div>
-            <div>
-              <span className="font-bold text-xs uppercase text-gray-700 block mb-6">Approved By (Name & Sign):</span>
-              <div className="border-b border-gray-400 w-full"></div>
+            <div className="flex flex-col gap-4">
+              <div className="mb-2">
+                <span className="font-bold text-xs uppercase text-gray-700 block mb-6">Verified By (Name & Sign):</span>
+                <div className="border-b border-gray-400 w-full">{data.verifiedBy || ''}</div>
+              </div>
+              <div>
+                <span className="font-bold text-xs uppercase text-gray-700 block mb-6">Approved By (Name & Sign):</span>
+                <div className="border-b border-gray-400 w-full">{data.approvedBy || ''}</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
     </div>
   );

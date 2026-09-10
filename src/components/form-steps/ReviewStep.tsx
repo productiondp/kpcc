@@ -119,12 +119,6 @@ export default function ReviewStep() {
           </div>
         </div>
         
-        {/* Section 6: Office Use */}
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2 mb-4">6. For Office Use Only</h3>
-          <p className="text-xs text-gray-400 italic">This section is intentionally left blank and will be filled by the office administrators.</p>
-        </div>
-
       </div>
     </div>
   );

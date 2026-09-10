@@ -60,15 +60,25 @@ export async function POST(request: Request) {
       body: JSON.stringify(data),
     });
 
-    const result = await response.json();
+    let result;
+    try {
+      const rawText = await response.text();
+      result = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error("Failed to parse Apps Script response. This usually means the Web App is returning an HTML login page due to incorrect deployment permissions. Access must be 'Anyone'.");
+      return NextResponse.json(
+        { success: false, error: "Server Configuration Error: The backend returned an invalid response (likely an HTML login page). Please check Google Apps Script deployment permissions." },
+        { status: 500 }
+      );
+    }
 
     if (result.status === 'success') {
       return NextResponse.json({ success: true, ...result });
     } else {
       return NextResponse.json({ success: false, error: result.message || "Unknown error from database" }, { status: 400 });
     }
-  } catch (error) {
-    console.error("Submission error:", error);
+  } catch (error: any) {
+    console.error("Submission error:", error.message || error);
     return NextResponse.json(
       { success: false, error: "Failed to process application. Please try again later." },
       { status: 500 }
