@@ -5,7 +5,7 @@
 
 const SPREADSHEET_ID = '1-GBp48hoRiQfk-z__F_3MLXWAZY6Rs4Ler59Vy7fLYk';
 const SHEET_NAME = 'Form Responses'; 
-const UPLOAD_FOLDER_ID = 'YOUR_FOLDER_ID_HERE'; // <-- SET THIS
+const UPLOAD_FOLDER_ID = '1cVYMG_U7N36Omhc2D6py_rFTM4kKjcNa';
 
 function doGet(e) {
   const action = e.parameter.action;
